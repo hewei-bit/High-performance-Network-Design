@@ -222,7 +222,7 @@ int main(int argc, char **argv)
         }
     }
 
-#elif 1
+#elif 0
 
     struct pollfd fds[POLL_SIZE] = {0};
     fds[0].fd = listenfd;
@@ -290,7 +290,7 @@ int main(int argc, char **argv)
         }
     }
 
-#elif 0
+#elif 1
 
     // poll/select -->
     //  epoll_create
