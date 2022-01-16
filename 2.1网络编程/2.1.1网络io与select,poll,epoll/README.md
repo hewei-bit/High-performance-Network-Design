@@ -15,13 +15,11 @@ sequenceDiagram
 Note left of 客户端: 连接请求
 客户端->>服务器:SYN=1，seq=client_isn
 Note right of 服务器: 允许连接
-服务器->>客户端:SYN=1，seq=server_isn，
-<br/>ack = client_isn+1
+服务器->>客户端:SYN=1，seq=server_isn，ack = client_isn+1
 Note left of 客户端: ack
-客户端->>服务器:SYN=0，seq=client_isn+1,
-<br/>ack = client_isn+1
+客户端->>服务器:SYN=0，seq=client_isn+1,ack = client_isn+1
 ```
-## 五种网络IO模型与其实现
+## 网络IO模型中的阻塞与多路复用及其实现
 
 ### 1.阻塞——单线程与多线程
   * accept位于whlie循环之前：只能连接一个客户端
@@ -30,8 +28,7 @@ Note left of 客户端: ack
     * 每个请求对应一个线程，但是多线程需要进行CPU的上下文切换
     * 优点：结构简单
     * 缺点：无法支持大量客户端
-### 2.多路复用select/poll/epoll
-    ### 2.阻塞——select
+### 2.多路复用select
 
 * 执行流程
     1.select 是一个阻塞函数，当没有数据时，会一直阻塞在select这一行
@@ -44,7 +41,7 @@ Note left of 客户端: ack
     2.rset每次循环都必须重新置1，不可以重复使用
     3.尽管将rset从用户态拷贝到内核态，由内核态判断是否有数据，但是还是有拷贝的开销
     4.当有数据时select就会返回，但是select不知道哪个文件描述符发生变化，还需要进行遍历，效率比较低
-### 3.阻塞——poll
+### 3.多路复用poll
   * pollfd结构体
     * fd：文件描述符
     * events：对应的时间，如果是读事件就是POLLIN，如果是写事件就是POLLOUT
@@ -63,7 +60,7 @@ Note left of 客户端: ack
   * 弊端
     1.每次poll都仍要重新遍历全量的fds
     2.服务程序也要遍历全量的fds，查看每个文件描述符的revents字段是否需要读写操作
-### 4.非阻塞——epoll
+### 4.多路复用epoll
 * epoll_create() 返回一个文件描述符，该文件描述符“描述”的是内核中的一块内存区域，size现在不起任何作用。
 * epoll_ctl()用来操作内核事件表，
   * int epfd表示epoll_create() 返回的事件表
