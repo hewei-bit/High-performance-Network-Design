@@ -112,7 +112,7 @@ int recv_cb(int fd, int events, void *arg)
     int len = recv(fd, ev->buffer, BUFFER_LENGTH, 0);
     //收到就直接删除对应的fd，以免多次响应
     nty_event_del(reactor->epfd, ev);
-
+    //正确接收，大于0
     if (len > 0)
     {
         ev->length = len;
@@ -140,13 +140,14 @@ int send_cb(int fd, int events, void *arg)
 {
     struct ntyreactor *reactor = (struct ntyreactor *)arg;
     struct ntyevent *ev = reactor->events + fd;
-
+    //返回的是发送的字节数
     int len = send(fd, ev->buffer, ev->length, 0);
+    //正确发送,删除发送fd，注册接收的fd
     if (len > 0)
     {
         printf("send[fd=%d], [%d]%s\n", fd, len, ev->buffer);
         nty_event_del(reactor->epfd, ev);
-        nty_event_set(ev, fd, recv_cb, , reactor);
+        nty_event_set(ev, fd, recv_cb, reactor);
         nty_event_add(reactor->epfd, EPOLLIN, ev);
     }
     else
@@ -155,8 +156,27 @@ int send_cb(int fd, int events, void *arg)
         nty_event_del(reactor->epfd, ev);
         printf("send[fd=%d] error %s\n", fd, strerror(errno));
     }
+    return len;
 }
 
 int accpet_cb(int fd, int events, void *arg)
 {
+    struct ntyreactor *reactor = (struct ntyreactor *)arg;
+    if (reactor == NULL)
+    {
+        return -1;
+    }
+    struct sockaddr_in client_addr;
+    socklen_t len = sizeof(client_addr);
+
+    int clientfd;
+
+    if ((clientfd = accept(fd, (struct sockaddr *)&client_addr, &len)) == -1)
+    {
+        if (errno != EAGAIN && errno != EINTR)
+        {
+            printf("accept: %s\n", strerror(errno));
+            return -1;
+        }
+    }
 }
