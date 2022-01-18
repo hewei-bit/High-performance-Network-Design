@@ -149,7 +149,7 @@ int main(int argc, char **argv)
     }
 
 #elif 0
-    //这份代码有问题
+    //这份代码有问题，已修改
     //使用select实现多路复用
     //分别声明select中的读集合，写集合，读操作，写操作
     fd_set rfds, wfds, rset, wset;
@@ -221,6 +221,7 @@ int main(int argc, char **argv)
             else if (FD_ISSET(i, &wset))
             {
                 send(i, buff, n, 0);
+                FD_CLR(i, &wfds);
                 //设置为可读
                 FD_SET(i, &rfds);
             }
@@ -353,18 +354,21 @@ int main(int argc, char **argv)
 
     //创建一个空间，假设是一个大房子
     int epfd = epoll_create(1);
-
+    // epoll针对的是事件，创建一个事件数组用来管理需要关注的事件
     struct epoll_event events[POLL_SIZE] = {0};
+    //某次接收到的新事件
     struct epoll_event ev;
     //先把listenfd先塞进去
     ev.events = EPOLLIN;
     ev.data.fd = listenfd;
-    // add
+    // 添加listenfd，持续监听，添加到了内核管理的一棵红黑树上面
     epoll_ctl(epfd, EPOLL_CTL_ADD, listenfd, &ev);
 
     while (1)
     {
-        //非阻塞，最后一个是超时时间
+        //非阻塞，这里是从内核中的链表中提取出来放进events数组里
+        //查看events数组里面关注的事件描述符有没有置1，最后一个是超时时间
+        //没有则返回-1，有则返回事件的数量
         int nready = epoll_wait(epfd, events, POLL_SIZE, 5);
         if (nready == -1)
         {
@@ -376,7 +380,7 @@ int main(int argc, char **argv)
         {
             //读取获取的fd
             int clientfd = events[i].data.fd;
-            //如果是listenfd
+            //如果是listenfd，则收到的是客户端的fd
             if (clientfd == listenfd)
             {
                 struct sockaddr_in client;
@@ -387,7 +391,7 @@ int main(int argc, char **argv)
                     return 0;
                 }
                 printf("accept\n");
-                //添加到ev里
+                //通过epoll_clt添加到内核的红黑树里
                 ev.events = EPOLLIN;
                 ev.data.fd = connfd;
                 epoll_ctl(epfd, EPOLL_CTL_ADD, connfd, &ev);
@@ -400,11 +404,12 @@ int main(int argc, char **argv)
                 {
                     buff[n] = '\0';
                     printf("recv msg from client: %s\n", buff);
-
+                    //这里是直接发送回去，并不规范
                     send(clientfd, buff, n, 0);
                 }
                 else if (n == 0)
                 {
+                    //传输完成删除该fd
                     ev.events = EPOLLIN;
                     ev.data.fd = clientfd;
                     epoll_ctl(epfd, EPOLL_CTL_DEL, clientfd, &ev);
