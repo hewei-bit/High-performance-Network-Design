@@ -27,7 +27,7 @@ struct ntyevent
 
     int (*callback)(int fd, int events, void *arg); //对应的回调函数
 
-    int status; //0:新建 1：已存在
+    int status; // 0:新建 1：已存在
     char buffer[BUFFER_LENGTH];
     int length;
     long last_active;
@@ -78,7 +78,7 @@ int nty_event_add(int epfd, int events, struct ntyevent *ev)
         op = EPOLL_CTL_ADD;
         ev->status = 1;
     }
-    //epoll_ctl进行对应操作
+    // epoll_ctl进行对应操作
     if (epoll_ctl(epfd, op, ev->fd, &ep_ev) < 0)
     {
         printf("event add failed [fd=%d], events[%d]\n", ev->fd, events);
@@ -109,36 +109,52 @@ int recv_cb(int fd, int events, void *arg)
     struct ntyevent *ev = reactor->events + fd;
 
     //此次收到数据的长度
-    int len = recv(fd,ev->buffer,BUFFER_LENGTH,0);
+    int len = recv(fd, ev->buffer, BUFFER_LENGTH, 0);
     //收到就直接删除对应的fd，以免多次响应
-    nty_event_del(reactor->epfd,ev);
+    nty_event_del(reactor->epfd, ev);
 
-    if(len > 0){
+    if (len > 0)
+    {
         ev->length = len;
         ev->buffer[len] = '\0';
 
-        printf("C[%d]:%s\n",fd,ev->buffer);
+        printf("C[%d]:%s\n", fd, ev->buffer);
         //收到以后直接发送回去
-        nty_event_set(ev,fd,send_cb,reactor);
-        nty_event_add(reactor->epfd,EPOLLOUT,ev);
+        nty_event_set(ev, fd, send_cb, reactor);
+        nty_event_add(reactor->epfd, EPOLLOUT, ev);
     }
-    else if(len == 0)
+    else if (len == 0)
     {
         close(ev->fd);
-        printf("[fd=%d] pos[%ld], closed\n", fd, ev-reactor->events);
+        printf("[fd=%d] pos[%ld], closed\n", fd, ev - reactor->events);
     }
     else
     {
         close(ev->fd);
         printf("recv[fd=%d] error[%d]:%s\n", fd, errno, strerror(errno));
-
     }
     return len;
 }
 
 int send_cb(int fd, int events, void *arg)
 {
-    
+    struct ntyreactor *reactor = (struct ntyreactor *)arg;
+    struct ntyevent *ev = reactor->events + fd;
+
+    int len = send(fd, ev->buffer, ev->length, 0);
+    if (len > 0)
+    {
+        printf("send[fd=%d], [%d]%s\n", fd, len, ev->buffer);
+        nty_event_del(reactor->epfd, ev);
+        nty_event_set(ev, fd, recv_cb, , reactor);
+        nty_event_add(reactor->epfd, EPOLLIN, ev);
+    }
+    else
+    {
+        close(ev->fd);
+        nty_event_del(reactor->epfd, ev);
+        printf("send[fd=%d] error %s\n", fd, strerror(errno));
+    }
 }
 
 int accpet_cb(int fd, int events, void *arg)
