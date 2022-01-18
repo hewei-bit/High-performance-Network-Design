@@ -145,7 +145,7 @@ int main(int argc, char **argv)
         pthread_create(&threadid, NULL, client_routine, (void *)&connfd);
     }
 
-#elif 0
+#elif 1
 
     //
     fd_set rfds, rset, wfds, wset;
@@ -291,7 +291,7 @@ int main(int argc, char **argv)
         }
     }
 
-#elif 1
+#elif 0
 
     // poll/select -->
     //  epoll_create
