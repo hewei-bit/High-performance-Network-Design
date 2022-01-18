@@ -217,6 +217,7 @@ int main(int argc, char **argv)
             {
 
                 send(i, buff, n, 0);
+                FD_CLR(i, &wfds);
                 FD_SET(i, &rfds);
             }
         }
