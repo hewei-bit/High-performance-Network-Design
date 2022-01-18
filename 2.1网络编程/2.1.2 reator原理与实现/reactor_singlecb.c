@@ -250,14 +250,12 @@ int ntyreactor_init(struct ntyreactor *reactor)
 
 int ntyreactor_destory(struct ntyreactor *reactor)
 {
-
     close(reactor->epfd);
     free(reactor->events);
 }
 
 int ntyreactor_addlistener(struct ntyreactor *reactor, int sockfd, NCALLBACK *acceptor)
 {
-
     if (reactor == NULL)
         return -1;
     if (reactor->events == NULL)
@@ -284,7 +282,6 @@ int ntyreactor_run(struct ntyreactor *reactor)
 
     while (1)
     {
-
         long now = time(NULL);
         for (i = 0; i < 100; i++, checkpos++)
         {
@@ -334,7 +331,6 @@ int ntyreactor_run(struct ntyreactor *reactor)
 
 int main(int argc, char *argv[])
 {
-
     unsigned short port = SERVER_PORT;
     if (argc == 2)
     {
