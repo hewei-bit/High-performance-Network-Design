@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
+#include <time.h>
 
 
 #define BUFFER_LENGTH		4096
