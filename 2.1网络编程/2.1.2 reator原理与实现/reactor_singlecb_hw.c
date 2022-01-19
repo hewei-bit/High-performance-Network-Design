@@ -204,7 +204,8 @@ int accpet_cb(int fd, int events, void *arg)
             printf("%s: fcntl nonblocking failed, %d\n", __func__, MAX_EPOLL_EVENT);
             break;
         }
-        //加入到reactor的events数组里面
+        //加入到epoll内核的红黑树里面
+        //同时也挂在了reactor上面实现非阻塞
         nty_event_set(&reactor->events[clientfd], clientfd, recv_cb, reactor);
         nty_event_add(reactor->epfd, EPOLLIN, &reactor->events[clientfd]);
     } while (0);
