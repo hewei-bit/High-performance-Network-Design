@@ -1,0 +1,46 @@
+<html>
+<head>
+    <script>
+        let ws;
+
+        function doConnect(addr) {
+            ws = new WebSocket("ws://" + addr);
+            ws.onopen = () => {
+                document.getElementById("log").value += (" Connection opened\n");
+            };
+            ws.onmessage = (event) => {
+                document.getElementById("log").value += (" Receive: " + event.data + "\n\n"); // JSON.stringify()
+            };
+            ws.onclose = () => {
+                document.getElementById("log").value += (" Connection closed\n");
+            };
+        }
+
+        document.addEventListener("DOMContentLoaded", (event) => {
+            document.getElementById("btn_connect").onclick = () => {
+                let server_addr = document.getElementById("server_addr").value;
+                doConnect(server_addr);
+            };
+
+            document.getElementById("btn_send").onclick = () => {
+                let msg = document.getElementById("message").value;
+                ws.send(msg);
+                document.getElementById("log").value += (" Send: " + msg + "\n");
+            };
+        });
+    </script>
+</head>
+<body>
+
+<div id="header">
+    <h1 align="left">WebSocket Client</h1>
+    Server: <input id="server_addr" type="text" value="192.168.1.100:8888">
+    <input id="btn_connect" type="button" value="Connect!"><br/><br/>
+
+    Message: <input id="message" type="text" value="">
+    <input id="btn_send" type="button" value="Send"><br/><br/>
+
+    <textarea cols="250" id="log" rows="50"></textarea>
+</div>
+</body>
+</html>
