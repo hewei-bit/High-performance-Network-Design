@@ -13,7 +13,7 @@
 //缓冲区长度
 #define BUFFER_LENGTH 4096
 // epoll中的事物数量
-#define MAX_EPOLL_EVENT 1024
+#define MAX_EPOLL_EVENTS 1024
 #define SERVER_PORT 8888
 
 typedef int NCALLBACK(int, int, void *);
@@ -90,14 +90,14 @@ int nty_event_add(int epfd, int events, struct ntyevent *ev)
 
 int nty_event_del(int epfd, struct ntyevent *ev)
 {
-    struct epoll_event ep_dv = {0, {0}};
+    struct epoll_event ep_ev = {0, {0}};
     if (ev->status != 1)
     {
         return -1;
     }
-    ep_dv.data.ptr = ev;
+    ep_ev.data.ptr = ev;
     ev->status = 0;
-    epoll_ctl(epfd, EPOLL_CTL_DEL, ev->fd, &ep_dv);
+    epoll_ctl(epfd, EPOLL_CTL_DEL, ev->fd, &ep_ev);
 
     return 0;
 }
@@ -161,7 +161,7 @@ int send_cb(int fd, int events, void *arg)
     return len;
 }
 
-int accpet_cb(int fd, int events, void *arg)
+int accept_cb(int fd, int events, void *arg)
 {
     struct ntyreactor *reactor = (struct ntyreactor *)arg;
     if (reactor == NULL)
@@ -185,7 +185,7 @@ int accpet_cb(int fd, int events, void *arg)
     int i = 0;
     do
     {
-        for (i = 3; i < MAX_EPOLL_EVENT; i++)
+        for (i = 3; i < MAX_EPOLL_EVENTS; i++)
         {
             //未创建退出该循环
             if (reactor->events[i].status == 0)
@@ -193,15 +193,15 @@ int accpet_cb(int fd, int events, void *arg)
                 break;
             }
         }
-        if (i == MAX_EPOLL_EVENT)
+        if (i == MAX_EPOLL_EVENTS)
         {
-            printf("%s :max connect limit[%d]\n", __func__, MAX_EPOLL_EVENT);
+            printf("%s: max connect limit[%d]\n", __func__, MAX_EPOLL_EVENTS);
             break;
         }
         int flag = 0;
         if ((flag = fcntl(clientfd, F_SETFL, O_NONBLOCK)) < 0)
         {
-            printf("%s: fcntl nonblocking failed, %d\n", __func__, MAX_EPOLL_EVENT);
+            printf("%s: fcntl nonblocking failed, %d\n", __func__, MAX_EPOLL_EVENTS);
             break;
         }
         //加入到epoll内核的红黑树里面
@@ -252,7 +252,7 @@ int ntyreactor_init(struct ntyreactor *reactor)
         return -2;
     }
     //申请events的空间
-    reactor->events = (struct ntyevent *)malloc((MAX_EPOLL_EVENT) * sizeof(struct ntyevent));
+    reactor->events = (struct ntyevent *)malloc((MAX_EPOLL_EVENTS) * sizeof(struct ntyevent));
     if (reactor->events == NULL)
     {
         printf("create epfd in %s err %s\n", __func__, strerror(errno));
@@ -282,6 +282,7 @@ int ntyreactor_addlistener(struct ntyreactor *reactor, int sockfd, NCALLBACK *ac
 
     nty_event_set(&reactor->events[sockfd], sockfd, acceptor, reactor);
     nty_event_add(reactor->epfd, EPOLLIN, &reactor->events[sockfd]);
+    return 0;
 }
 
 int ntyreactor_run(struct ntyreactor *reactor)
@@ -293,17 +294,17 @@ int ntyreactor_run(struct ntyreactor *reactor)
     if (reactor->events == NULL)
         return -1;
 
-    struct epoll_event events[MAX_EPOLL_EVENT + 1];
+    struct epoll_event events[MAX_EPOLL_EVENTS + 1];
     int checkpos = 0, i;
 
     while (1)
     {
         // 100个为单位的进行检查是否超时
         long now = time(NULL);
-        for (int i = 0; i < 100; i++, checkpos++)
+        for (i = 0; i < 100; i++, checkpos++)
         {
             //满了就清空
-            if (checkpos == MAX_EPOLL_EVENT)
+            if (checkpos == MAX_EPOLL_EVENTS)
             {
                 checkpos = 0;
             }
@@ -324,7 +325,7 @@ int ntyreactor_run(struct ntyreactor *reactor)
         }
 
         //从内核中把事务提取出来放到events里面
-        int nready = epoll_wait(reactor->epfd, events, MAX_EPOLL_EVENT, 1000);
+        int nready = epoll_wait(reactor->epfd, events, MAX_EPOLL_EVENTS, 1000);
         if (nready < 0)
         {
             printf("epoll_wait error, exit\n");
@@ -364,7 +365,7 @@ int main(int argc, char *argv[])
     struct ntyreactor *reactor = (struct ntyreactor *)malloc(sizeof(struct ntyreactor));
     ntyreactor_init(reactor);
 
-    ntyreactor_addlistener(reactor, sockfd, accpet_cb);
+    ntyreactor_addlistener(reactor, sockfd, accept_cb);
     ntyreactor_run(reactor);
 
     ntyreactor_destroy(reactor);
