@@ -148,10 +148,11 @@ int http_request(struct ntyevent *ev)
     {
         ev->method = HTTP_METHOD_GET;
 
-        // uri
+        // 获取GET前面和HTTP之前的资源位，并塞进linebuf里面
         int i = 0;
         while (linebuf[sizeof("GET ") + i] != ' ')
             i++;
+
         linebuf[sizeof("GET ") + i] = '\0';
 
         sprintf(ev->resource, "./%s/%s", HTTP_WEBSERVER_HTML_ROOT, linebuf + sizeof("GET "));
@@ -224,6 +225,7 @@ int http_response(struct ntyevent *ev)
     printf("resource: %s\n", ev->resource);
 
     int filefd = open(ev->resource, O_RDONLY);
+    //找不到文件
     if (filefd == -1)
     { // return 404
 
@@ -241,7 +243,7 @@ int http_response(struct ntyevent *ev)
         struct stat stat_buf;
         fstat(filefd, &stat_buf);
         close(filefd);
-
+        //文件处于保护模式
         if (S_ISDIR(stat_buf.st_mode))
         {
 
@@ -300,7 +302,6 @@ int send_cb(int fd, int events, void *arg)
     }
     else
     {
-
         close(ev->fd);
 
         nty_event_del(reactor->epfd, ev);
