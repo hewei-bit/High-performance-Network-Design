@@ -13,17 +13,61 @@
 #include <sys/stat.h>
 #include <sys/sendfile.h>
 
+#include <openssl/sha.h>
+#include <openssl/pem.h>
+#include <openssl/bio.h>
+#include <openssl/evp.h>
+
 #define BUFFER_LENGTH 4096    //缓冲区长度
 #define MAX_EPOLL_EVENTS 1024 // epoll中的事物数量
 #define SERVER_PORT 8888      //默认端口号
 #define PORT_COUNT 100        //连接客户端数量
 
-#define HTTP_WEBSERVER_HTML_ROOT "html" //文件夹名
-
-#define HTTP_METHOD_GET 0
-#define HTTP_METHOD_POST 1
+//全球唯一标识符
+#define GUID "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
 typedef int NCALLBACK(int, int, void *);
+
+//用于表示websocket三个状态
+enum
+{
+    WS_HANDSHAKE = 0,
+    WS_TRANSMISSION = 1,
+    WS_END = 2,
+};
+
+//以下是协议头，这里是第一、第二字节
+typedef struct _ws_ophdr
+{
+    //注意协议展示图是从低到高，但是编写时表示过程从高到低
+    //第一个字节
+    unsigned char opcode : 4,
+        rsv3 : 1,
+        rsv2 : 1,
+        rsv1 : 1,
+        fin : 1;
+    //第二字节
+    unsigned char pl_len : 7,
+        mask : 1;
+} ws_ophdr;
+
+//假设payload_length==126，需要用上2个字节
+typedef struct _ws_head_126
+{
+
+    unsigned short payload_length;
+    char mask_key[4];
+
+} ws_head_126;
+
+//假设payload_length==127，需要用上4个字节
+typedef struct _ws_head_127
+{
+
+    long long payload_length;
+    char mask_key[4];
+
+} ws_head_127;
 
 //事务结构体
 struct ntyevent
@@ -37,10 +81,8 @@ struct ntyevent
     int length;
     long last_active;
 
-    // http 参数
-    int method;
-    char resource[BUFFER_LENGTH];
-    int ret_code;
+    // websocket 参数
+    int status_machine;
 };
 
 struct eventblock
