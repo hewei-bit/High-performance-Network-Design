@@ -42,7 +42,7 @@ struct ntyreactor
 
 int recv_cb(int fd, int events, void *arg);
 int send_cb(int fd, int events, void *arg);
-int accpet_cb(int fd, int events, void *arg);
+int accept_cb(int fd, int events, void *arg);
 
 void nty_event_set(struct ntyevent *ev, int fd, NCALLBACK callback, void *arg);
 int nty_event_add(int epfd, int events, struct ntyevent *ev);
