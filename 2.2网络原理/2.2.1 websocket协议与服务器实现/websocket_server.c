@@ -20,6 +20,7 @@
 #define SERVER_PORT 8888
 #define PORT_COUNT 100
 
+//全球唯一标识符
 #define GUID "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
 enum
