@@ -46,7 +46,7 @@ struct ntyreactor
     int epfd; // reatctor的fd
     int blkcnt;
     struct eventblock *evblk; // fd --> 100w
-	 // reactor管理的基础单元，现在是block，实现C1000K
+                              // reactor管理的基础单元，现在是block，实现C1000K
 };
 
 int recv_cb(int fd, int events, void *arg);
