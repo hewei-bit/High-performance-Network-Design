@@ -15,7 +15,8 @@
                 "/usr/lib/gcc/x86_64-linux-gnu/9/include",
                 "/usr/local/include",
                 "/usr/include/x86_64-linux-gnu",
-                "/usr/include"
+                "/usr/include",
+                "2.2网络原理/2.2.4 UPD的可靠传输协议QUIC/src/kcp-20211120"
             ],
             "defines": [
                 "_DEBUG",
