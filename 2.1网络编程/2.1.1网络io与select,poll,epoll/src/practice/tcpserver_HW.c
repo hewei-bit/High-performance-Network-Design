@@ -152,7 +152,7 @@ int main(int argc, char **argv)
 #elif 0
     //使用select实现多路复用
     //分别声明select中的读集合，写集合，读操作，写操作
-    fd_set rfds, wfds, rset, wset;
+    fd_set rset, wset, rfds, wfds;
 
     //全都置0
     FD_ZERO(&rfds);
