@@ -16,14 +16,19 @@
                 "/usr/local/include",
                 "/usr/include/x86_64-linux-gnu",
                 "/usr/include",
-                "2.2网络原理/2.2.4 UPD的可靠传输协议QUIC/src/kcp-20211120"
+                "2.2网络原理/2.2.4 UPD的可靠传输协议QUIC/src/kcp-20211120",
+                "2.2网络原理/2.2.4 UPD的可靠传输协议QUIC/src/practice/client/inc",
+                "2.2网络原理/2.2.4 UPD的可靠传输协议QUIC/src/practice/delay/inc",
+                "2.2网络原理/2.2.4 UPD的可靠传输协议QUIC/src/practice/kcp",
+                "2.2网络原理/2.2.4 UPD的可靠传输协议QUIC/src/practice/server/inc"
             ],
             "defines": [
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE"
             ],
-            "cStandard": "gnu17"
+            "cStandard": "gnu17",
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
     "version": 4
