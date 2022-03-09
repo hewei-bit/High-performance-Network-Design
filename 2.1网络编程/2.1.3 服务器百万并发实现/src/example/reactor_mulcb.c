@@ -72,7 +72,7 @@ struct reactor *instance = NULL;
 
 struct reactor *getInstance(void)
 {
-    //singleton
+    // singleton
     if (instance == NULL)
     {
 
@@ -187,7 +187,7 @@ int read_callback(int fd, int event, void *arg)
 
     unsigned char *buffer = R->head->items[fd].rbuffer;
 
-#if 0 //ET
+#if 0 // ET
 	int idx = 0, ret = 0;
 	while (idx < BUFFER_LENGTH) {
 
@@ -211,7 +211,7 @@ int read_callback(int fd, int event, void *arg)
 		nreactor_set_event(fd, write_callback, WRITE_CB, NULL);
 	}
 
-#else //LT
+#else // LT
 
     int ret = recv(fd, buffer, BUFFER_LENGTH, 0);
     if (ret == 0)
@@ -289,7 +289,7 @@ int init_reactor(struct reactor *r)
     if (r == NULL)
         return -1;
 
-    int epfd = epoll_create(1); //int size
+    int epfd = epoll_create(1); // int size
     r->epfd = epfd;
 
     // fd --> item
@@ -368,7 +368,7 @@ int main(int argc, char **argv)
     int listenfd = init_server(9999);
     nreactor_set_event(listenfd, accept_callback, ACCEPT_CB, NULL);
 
-    //nreactor_set_event(listenfd, accept_callback, read_callback, write_callback);
+    // nreactor_set_event(listenfd, accept_callback, read_callback, write_callback);
 
     reactor_loop(listenfd);
 
