@@ -86,7 +86,7 @@ int main(int argc, char **argv)
                 goto err;
             }
 
-            //ntySetReUseAddr(sockfd);
+            // ntySetReUseAddr(sockfd);
             addr.sin_port = htons(port + index);
 
             if (connect(sockfd, (struct sockaddr *)&addr, sizeof(struct sockaddr_in)) < 0)
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
 
             connections++;
         }
-        //connections ++;
+        // connections ++;
         if (connections % 1000 == 999 || connections >= 340000)
         {
             struct timeval tv_cur;
