@@ -2,6 +2,18 @@
 # CMake 最低版本号要求
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
+# 设置release版本还是debug版本
+if(${CMAKE_BUILD_TYPE} MATCHES "Release")
+    MESSAGE(STATUS "Release版本")
+    SET(BuildType "Release")
+else()
+    SET(BuildType "Debug")
+    MESSAGE(STATUS "Debug版本")
+endif()
+
+#设置lib库目录
+SET(RELEASE_DIR ${PROJECT_SOURCE_DIR}/release)
+
 # 工程
 project(kcp_hw LANGUAGES C)
 
@@ -19,14 +31,13 @@ INCLUDE_DIRECTORIES("${CMAKE_CURRENT_SOURCE_DIR}/kcp")
 INCLUDE_DIRECTORIES("${CMAKE_CURRENT_SOURCE_DIR}/server")
 INCLUDE_DIRECTORIES("${CMAKE_CURRENT_SOURCE_DIR}/test")
 
-# 加载所有的源码，和makefile wildcard类似
-AUX_SOURCE_DIRECTORY(./client ./server ./delay ./kcp ./test DIR_SRCS)
-
-# 默认是静态库
-add_library(kcp STATIC ikcp.c)
+# 添加子目录
+ADD_SUBDIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/delay")
+ADD_SUBDIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/kcp")
 
 install(FILES ikcp.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
+# 将执行文件安装到LIB目录
 install(TARGETS kcp
     EXPORT kcp-targets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -43,13 +54,17 @@ install(EXPORT kcp-targets
 if (BUILD_TESTING)
 
     enable_language(CXX)
+    
     # client
-    add_executable(client client.c ikcp.c delay.c)
-    target_link_libraries(client pthread)
+    add_executable(client ./client/client.c)
+    target_link_libraries(client pthread kcp delay)
+
     # server
-    add_executable(server server.c ikcp.c)
-    # test_kcp
-    add_executable(test_kcp test.cpp ikcp.c)
+    add_executable(server ./server/server.c)
+    target_link_libraries(server kcp)
+    # test
+    add_executable(kcp_test ./test/kcp_test.cpp)
+    target_link_libraries(kcp_test kcp)
 
     if(MSVC AND NOT (MSVC_VERSION LESS 1900))
         target_compile_options(kcp_test PRIVATE /utf-8)
