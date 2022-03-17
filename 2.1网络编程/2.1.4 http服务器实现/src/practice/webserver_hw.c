@@ -1,3 +1,11 @@
+/**
+ * @File Name: webserver_hw.c
+ * @Brief : http服务器实现
+ * @Author : hewei (hewei_1996@qq.com)
+ * @Version : 1.0
+ * @Creat Date : 2022-03-16
+ *
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
