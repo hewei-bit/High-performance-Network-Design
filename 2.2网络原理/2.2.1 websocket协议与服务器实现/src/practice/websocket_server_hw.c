@@ -1,3 +1,11 @@
+/**
+ * @File Name: websocket_server_hw.c
+ * @Brief : websocket服务器实现
+ * @Author : hewei (hewei_1996@qq.com)
+ * @Version : 1.0
+ * @Creat Date : 2022-03-16
+ *
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,13 +26,11 @@
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 
-#define BUFFER_LENGTH 4096    //缓冲区长度
-#define MAX_EPOLL_EVENTS 1024 // epoll中的事物数量
-#define SERVER_PORT 8888      //默认端口号
-#define PORT_COUNT 100        //连接客户端数量
-
-//全球唯一标识符
-#define GUID "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+#define MAX_EPOLL_SIZE 1024                         // epoll中的事物数量
+#define KING_SERVER_PORT 8888                       // 默认端口号
+#define PORT_COUNT 100                              // 连接客户端数量
+#define BUFFER_LENGTH 4096                          // 缓冲区长度
+#define GUID "258EAFA5-E914-47DA-95CA-C5AB0DC85B11" //全球唯一标识符
 
 typedef int NCALLBACK(int, int, void *);
 
