@@ -1,0 +1,61 @@
+{
+    "root": {
+        "data": {
+            "id": "cilqjnkqh9k0",
+            "created": 1647478946214,
+            "text": "MainTopic",
+            "priority": null
+        },
+        "children": [
+            {
+                "data": {
+                    "id": "cilqk5ydh280",
+                    "created": 1647478986221,
+                    "text": "topic",
+                    "expandState": "collapse"
+                },
+                "children": [
+                    {
+                        "data": {
+                            "id": "cilqk6gusw00",
+                            "created": 1647478987339,
+                            "text": "topic",
+                            "layout_right_offset": {
+                                "x": 11.66666620307501,
+                                "y": 31.666665408346432
+                            }
+                        },
+                        "children": []
+                    }
+                ]
+            },
+            {
+                "data": {
+                    "id": "cilqkavn1r40",
+                    "created": 1647478996940,
+                    "text": "topic"
+                },
+                "children": []
+            },
+            {
+                "data": {
+                    "id": "cilqkc3k48o0",
+                    "created": 1647478999595,
+                    "text": "topic"
+                },
+                "children": []
+            },
+            {
+                "data": {
+                    "id": "cilqke1pmaw0",
+                    "created": 1647479003837,
+                    "text": "topic"
+                },
+                "children": []
+            }
+        ]
+    },
+    "template": "right",
+    "theme": "fresh-blue",
+    "version": "1.4.43"
+}
