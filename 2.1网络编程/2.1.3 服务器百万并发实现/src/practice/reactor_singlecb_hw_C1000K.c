@@ -381,6 +381,7 @@ int ntyreactor_addlistener(struct ntyreactor *reactor, int sockfd, NCALLBACK *ac
     return 0;
 }
 
+// 事件分发器
 int ntyreactor_run(struct ntyreactor *reactor)
 {
     if (reactor == NULL)
