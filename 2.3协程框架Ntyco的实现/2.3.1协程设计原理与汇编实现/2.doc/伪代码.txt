@@ -1,0 +1,62 @@
+
+
+
+// 7400ms
+
+func () {
+
+    while (1) {
+
+        epoll_wait();
+
+        for(;;) {
+
+            recv();
+
+            send();
+
+        }
+
+    }
+
+}
+
+
+
+// 1400ms
+
+thread_cb(void *arg) {
+
+    poll()
+    recv();
+
+    send();
+
+}
+
+func () {
+
+    while (1) {
+
+        epoll_wait();
+
+        for (;;) {
+            
+            push_other_thread();
+
+        }
+
+    }
+
+}
+
+
+同步与异步，形容两者之间的关系
+检测io与读写io，
+
+异步io， aio 
+io异步操作
+
+异步编程方式的麻烦点：多个线程共用一个fd，性能比较高。
+同步好处：便于理解。性能不高
+

@@ -1,0 +1,115 @@
+
+
+client_func(int fd) {
+
+    send(fd, buffer, length, 0)
+
+
+    int nready = epoll_wait(epfd, );
+
+    recv(fd, rbuffer, LENGTH, 0); // fd 阻塞的
+
+    解析服务端返回数据
+
+}
+
+
+struct cpu_register_set {
+    void *r1;
+    void *ebx;
+    .......
+};
+
+
+#define queue_node(name, type) struct name { \
+    struct type *next;                  \
+    struct type *prev;                  \
+}
+
+
+#define rbtree_node(name, type) struct name {
+
+    char color;
+    struct type *right;
+    struct type *left;
+    struct type *parent;
+
+
+}
+
+//
+struct coroutine {
+
+    struct cpu_register_set *set; //cpu
+
+    void *func; // coroutine_entry;
+    void *arg;
+
+    void *retval; //
+
+    void *stack_addr; //
+    size_t stack_size;
+
+    //struct coroutine *next;
+
+    queue_node(ready_queue, coroutine) *ready;
+    rbtree_node(coroutine) *wait;
+    rbtree_node(coroutine) *sleep; // optional
+};
+
+
+struct scheduler {
+
+    struct scheduler_ops *ops;
+    struct coroutine *cur;
+
+    int epfd; //
+
+    queue_node *ready_set;
+    rbtree() *wait_set;
+    rbtree() *sleep_set;
+};
+
+// 
+struct scheduler_ops {
+
+    struct scheduler_ops *next;
+
+    enset();
+    deset();
+
+}; 
+
+
+
+coroutine_create(entry_cb, arg);
+
+coroutine_join(coid, &ret) {
+
+    co = search(coid)
+    while (co->ret == NULL) {
+        wait(); //cond_wait();
+    }
+
+    return co->ret;
+}
+
+
+pthread_create(&thid, NULL, entry_cb, arg);
+
+pthread_join(thid, )
+
+task_struct *task;
+enqueue_ready;
+
+
+
+exec(co) {
+    
+    co->reval = co->func(co->arg);
+    signal();
+}
+
+
+
+
