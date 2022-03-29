@@ -17,65 +17,32 @@
 
 #define POLL_SIZE 1024
 
-// 4G / 8m = 512 假设运行内存只有4g，每个客户端连接占8m，只能支持512个连接
-// C10K
-void *client_routine(void *arg)
+int init_sock(short port)
 {
-    int connfd = *(int *)arg;
+    int fd = socket(AF_INET, SOCK_STREAM, 0);
+    fcntl(fd, F_SETFL, O_NONBLOCK);
 
-    char buff[MAXLNE];
+    struct sockaddr_in server_addr;
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    server_addr.sin_port = htons(port);
 
-    while (1)
+    bind(fd, (struct sockaddr *)&server_addr, sizeof(server_addr));
+
+    if (listen(fd, 20) < 0)
     {
-        int n = recv(connfd, buff, MAXLNE, 0);
-        if (n > 0)
-        {
-            buff[n] = '\0';
-            printf("recv msg from client: %s\n", buff);
-            send(connfd, buff, n, 0);
-        }
-        else if (n == 0)
-        {
-            close(connfd);
-            break;
-        }
+        printf("listen failed : %s\n", strerror(errno));
     }
-    return NULL;
+
+    return fd;
 }
 
-int main(int argc, char **argv)
+//首先是最基本的方案，在while循环之前accept
+//只能实现单个客户端的连接
+void accept_not_in_while_test(int listenfd)
 {
-    int listenfd, connfd, n;
-    struct sockaddr_in servaddr;
-    char buff[MAXLNE];
-    //使用socket套接字创建listenfd
-    if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-    {
-        printf("create socket error: %s(errno: %d)\n", strerror(errno), errno);
-        return 0;
-    }
-    //设置sockaddr结构体
-    memset(&servaddr, 0, sizeof(servaddr));
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servaddr.sin_port = htons(9999);
 
-    //绑定地址
-    if (bind(listenfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) == -1)
-    {
-        printf("bind socket error: %s(errno: %d)\n", strerror(errno), errno);
-        return 0;
-    }
-    //开启listen
-    if (listen(listenfd, 10) == -1)
-    {
-        printf("listen socket error: %s(errno: %d)\n", strerror(errno), errno);
-        return 0;
-    }
-
-#if 0
-    //首先是最基本的方案，在while循环之前accept
-    //只能实现单个客户端的连接
     //定义客户端地址
     struct sockaddr_in client;
     socklen_t len = sizeof(client);
@@ -100,10 +67,13 @@ int main(int argc, char **argv)
             close(connfd);
         }
     }
+}
 
-#elif 0
-    //将accept放入while循环，可以实现多个客户端连接，
-    //但是每次只能进行对话一次
+// 将accept放入while循环，可以实现多个客户端连接，
+//但是每次只能进行对话一次
+void accept_in_while_test(int listenfd)
+{
+
     printf("========waiting for client's request========\n");
     while (1)
     {
@@ -131,9 +101,39 @@ int main(int argc, char **argv)
 
         // close(connfd);
     }
-#elif 0
-    //开线程，可以实现多个客户端连接，
-    //但是数量有限，开销大
+}
+
+// 4G / 8m = 512 假设运行内存只有4g，每个客户端连接占8m，只能支持512个连接
+// C10K
+void *client_routine(void *arg)
+{
+    int connfd = *(int *)arg;
+
+    char buff[MAXLNE];
+
+    while (1)
+    {
+        int n = recv(connfd, buff, MAXLNE, 0);
+        if (n > 0)
+        {
+            buff[n] = '\0';
+            printf("recv msg from client: %s\n", buff);
+            send(connfd, buff, n, 0);
+        }
+        else if (n == 0)
+        {
+            close(connfd);
+            break;
+        }
+    }
+    return NULL;
+}
+
+//开线程，可以实现多个客户端连接，
+//但是数量有限，开销大
+void pthread_test(int listenfd)
+{
+
     while (1)
     {
 
@@ -148,9 +148,12 @@ int main(int argc, char **argv)
         pthread_t threadid;
         pthread_create(&threadid, NULL, client_routine, (void *)&connfd);
     }
+}
 
-#elif 0
-    //使用select实现多路复用
+//使用select实现多路复用
+void select_test(int listenfd)
+{
+
     //分别声明select中的读集合，写集合，读操作，写操作
     fd_set rset, wset, rfds, wfds;
 
@@ -227,65 +230,10 @@ int main(int argc, char **argv)
             }
         }
     }
-#elif 0
-    //放了一个正常的select
-    fd_set rfds, rset;
+}
 
-    FD_ZERO(&rfds);
-    FD_SET(listenfd, &rfds);
-
-    int max_fd = listenfd;
-
-    while (1)
-    {
-        //每次都会被清空，需要重新放入
-        rset = rfds;
-
-        int nready = select(max_fd + 1, &rset, NULL, NULL, NULL);
-
-        if (FD_ISSET(listenfd, &rset))
-        {
-            struct sockaddr_in client;
-            socklen_t len = sizeof(client);
-            if ((connfd = accept(listenfd, (struct sockaddr *)&client, &len)) == -1)
-            {
-                printf("accept socket error: %s(errno: %d)\n", strerror(errno), errno);
-                return 0;
-            }
-
-            FD_SET(connfd, &rfds);
-
-            if (connfd > max_fd)
-                max_fd = connfd;
-
-            if (--nready == 0)
-                continue;
-        }
-
-        int i = 0;
-        for (i = listenfd + 1; i <= max_fd; i++)
-        {
-            if (FD_ISSET(i, &rset))
-            {
-                n = recv(i, buff, MAXLNE, 0);
-                if (n > 0)
-                {
-                    buff[n] = '\0';
-                    printf("recv msg from client: %s\n", buff);
-
-                    send(i, buff, n, 0);
-                }
-                else if (n == 0)
-                {
-                    FD_CLR(i, &rfds);
-                    close(i);
-                }
-                if (--nready == 0)
-                    break;
-            }
-        }
-    }
-#elif 0
+void poll_test(int listenfd)
+{
     // poll 先把listenfd放进去，关注读事件
     struct pollfd fds[POLL_SIZE] = {0};
     fds[0].fd = listenfd;
@@ -346,7 +294,10 @@ int main(int argc, char **argv)
             }
         }
     }
-#elif 1
+}
+
+void epoll_test(int listenfd)
+{
     // poll/select -->
     //  epoll_create
     //  epoll_ctl(ADD, DEL, MOD)
@@ -418,6 +369,34 @@ int main(int argc, char **argv)
             }
         }
     }
+}
+
+int main(int argc, char **argv)
+{
+    int listenfd, connfd, n;
+    struct sockaddr_in servaddr;
+    char buff[MAXLNE];
+
+    listenfd = init_sock(htons(9999));
+
+#if 0
+    accept_not_in_while_test(int listenfd);
+
+#elif 0
+    accept_in_while_test(int listenfd);
+
+#elif 0
+    pthread_test(int listenfd);
+
+#elif 0
+    select_test(int listenfd);
+
+#elif 0
+    poll_test(int listenfd);
+
+#elif 1
+
+    epoll_test(int listenfd);
 
 #endif
     close(listenfd);
