@@ -317,7 +317,7 @@ void epoll_test(int listenfd)
 
     while (1)
     {
-        //非阻塞，这里是从内核中的链表中提取出来放进events数组里
+        //阻塞，这里是从内核中的链表中提取出来放进events数组里
         //查看events数组里面关注的事件描述符有没有置1，最后一个是超时时间
         //没有则返回-1，有则返回事件的数量
         int nready = epoll_wait(epfd, events, POLL_SIZE, 5);
@@ -380,23 +380,23 @@ int main(int argc, char **argv)
     listenfd = init_sock(htons(9999));
 
 #if 0
-    accept_not_in_while_test(int listenfd);
+    accept_not_in_while_test(listenfd);
 
 #elif 0
-    accept_in_while_test(int listenfd);
+    accept_in_while_test(listenfd);
 
 #elif 0
-    pthread_test(int listenfd);
+    pthread_test(listenfd);
 
 #elif 0
-    select_test(int listenfd);
+    select_test(listenfd);
 
 #elif 0
-    poll_test(int listenfd);
+    poll_test(listenfd);
 
 #elif 1
 
-    epoll_test(int listenfd);
+    epoll_test(listenfd);
 
 #endif
     close(listenfd);
