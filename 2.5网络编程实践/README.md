@@ -1,24 +1,25 @@
 # High-performance-Network-Design
 
-高性能网络设计
+# 网络编程实践
 
-## 1. 网络编程
+## 0.简介
+    、根据陈硕的网络编程实践课程，通过十几个例子，加深对网络编程的理解
 
-### 1.1 网络io与select、poll、epoll，reactor原理与实现、
+## 1.课程亮点 Highlight of the course
 
-### 1.2 http服务器实现、
+  1. Focus on server-side TCP neteork programming
+  2. Measurable performance
+  3. No hypothetic optimizations
 
-### 1.3 websocket协议与服务器实现
+## 2.铺垫 Layered NetWork
 
-## 2. 网络原理
+  * Ethernet frame 以太网帧
+  * IP packet IP包
+  * TCP segment TCP分节
+  * Application message 应用消息 
 
-### 2.1 服务器百万并发，网络协议栈，UDP可靠传输协议QUIC
 
-### 2.2 协程框架NtyCo的实现
-
-### 2.3 用户态协议栈NtyTcp的实现
-
-## 3. 网络编程实践
+## 3.课程大纲
 
 ### 3.1 Basic，non-concurrent examples（基础非并发实例 ）
 
